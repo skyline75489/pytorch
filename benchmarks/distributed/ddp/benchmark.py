@@ -214,32 +214,43 @@ class TorchvisionBenchmark(Benchmark):
 
 def main():
     parser = argparse.ArgumentParser(description='PyTorch distributed benchmark suite')
-    parser.add_argument("--rank", type=int, default=os.environ["RANK"])
+    parser.add_argument("--rank", type=int, default=os.environ.get("RANK", 0))
     parser.add_argument("--world-size", type=int, required=True)
     parser.add_argument("--distributed-backend", type=str, default="nccl")
     parser.add_argument("--bucket-size", type=int, default=25)
-    parser.add_argument("--master-addr", type=str, required=True)
-    parser.add_argument("--master-port", type=str, required=True)
+    parser.add_argument("--master-addr", type=str, required=False)
+    parser.add_argument("--master-port", type=str, required=False)
     parser.add_argument("--model", type=str)
     parser.add_argument("--json", type=str, metavar="PATH", help="Write file with benchmark results")
     args = parser.parse_args()
 
-    num_gpus_per_node = torch.cuda.device_count()
-    assert num_gpus_per_node == 8, "Expected 8 GPUs per machine"
+    #num_gpus_per_node = torch.cuda.device_count()
+    #assert num_gpus_per_node == 8, "Expected 8 GPUs per machine"
 
     # The global process group used only for communicating benchmark
     # metadata, like measurements. Not for benchmarking itself.
-    dist.init_process_group(
-        backend="gloo",
-        init_method="tcp://{}:{}".format(args.master_addr, args.master_port),
-        rank=args.rank,
-        world_size=args.world_size,
-    )
+    if sys.platform == 'win32':
+        init_method="file:///d:/Test/pg.txt"
 
-    output = allgather_run("nvidia-smi topo -m")
-    if not allequal(output):
-        print('Output of "nvidia-smi topo -m" differs between machines')
-        sys.exit(1)
+        # initialize the process group
+        dist.init_process_group(
+            "gloo",
+            init_method=init_method,
+            rank=args.rank,
+            world_size=args.world_size
+        )
+    else:
+        dist.init_process_group(
+            backend="gloo",
+            init_method="tcp://{}:{}".format(args.master_addr, args.master_port),
+            rank=args.rank,
+            world_size=args.world_size,
+        )
+
+    #output = allgather_run("nvidia-smi topo -m")
+    #if not allequal(output):
+    #    print('Output of "nvidia-smi topo -m" differs between machines')
+    #    sys.exit(1)
 
     if args.rank == 0:
         print("-----------------------------------")
@@ -253,7 +264,7 @@ def main():
         print("")
         print("--- nvidia-smi topo -m ---")
         print("")
-        print(output[0])
+        #print(output[0])
         print("--------------------------")
         print("")
 
