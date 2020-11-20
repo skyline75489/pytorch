@@ -32,6 +32,7 @@ if not torch._six.PY3:
     raise RuntimeError("DDP benchmark requires Python 3")
 
 
+
 def allgather_object(obj):
     buffer = io.BytesIO()
     torch.save(obj, buffer)
@@ -91,21 +92,25 @@ def benchmark_process_group(pg, benchmark, use_ddp_for_single_rank=True):
     warmup_iterations = 5
     measured_iterations = 10
 
-    writer = SummaryWriter(comment=benchmark.model)
+    enable_tensorboard = pg.rank() == 0
+    if enable_tensorboard:
+        writer = SummaryWriter(comment='_' + benchmark.model + '_' + benchmark.prefix)
     iter = 0
     for (inputs, target) in (data * (warmup_iterations + measured_iterations)):
         iter = iter + 1
         start = time.time()
         output = model(*inputs)
         loss = criterion(output, target)
-        writer.add_scalar("loss/iter", loss, iter)
+        if enable_tensorboard:
+            writer.add_scalar("loss/iter", loss, iter)
         loss.backward()
         optimizer.step()
         torch.cuda.synchronize()
         measurements.append(time.time() - start)
 
-    writer.flush()
-    writer.close()
+    if enable_tensorboard:
+        writer.flush()
+        writer.close()
     # Throw away measurements for warmup iterations
     return measurements[warmup_iterations:]
 
@@ -158,7 +163,7 @@ def sweep(benchmark):
     # Single machine baselines
     append_benchmark("  no ddp", range(1), {"use_ddp_for_single_rank": False})
     append_benchmark("   1M/1G", range(1))
-    #append_benchmark("   1M/2G", range(2))
+    append_benchmark("   1M/2G", range(2))
     #append_benchmark("   1M/4G", range(4))
 
     # Multi-machine benchmarks
@@ -171,6 +176,7 @@ def sweep(benchmark):
     for prefix, ranks, opts in sorted(benchmarks, key=lambda tup: len(tup[1])):
         # Turn range into materialized list.
         ranks = list(ranks)
+        benchmark.prefix = prefix
         measurements = run_benchmark(benchmark, ranks, opts)
         if "warmup" not in prefix:
             print_measurements(prefix, benchmark.batch_size, measurements)
@@ -289,7 +295,7 @@ def main():
                 bucket_size=args.bucket_size,
                 model=args.model))
     else:
-        for model in ["resnet50", "resnet101", "resnext50_32x4d", "resnext101_32x8d"]:
+        for model in ["resnet50"]:#, "resnet101", "resnext50_32x4d", "resnext101_32x8d"]:
             benchmarks.append(
                 TorchvisionBenchmark(
                     device=device,
