@@ -25,6 +25,8 @@ import torch.nn as nn
 import torch.optim as optim
 import torchvision
 
+from torch.utils.tensorboard import SummaryWriter
+
 
 if not torch._six.PY3:
     raise RuntimeError("DDP benchmark requires Python 3")
@@ -88,15 +90,22 @@ def benchmark_process_group(pg, benchmark, use_ddp_for_single_rank=True):
     measurements = []
     warmup_iterations = 5
     measured_iterations = 10
+
+    writer = SummaryWriter(comment=benchmark.model)
+    iter = 0
     for (inputs, target) in (data * (warmup_iterations + measured_iterations)):
+        iter = iter + 1
         start = time.time()
         output = model(*inputs)
         loss = criterion(output, target)
+        writer.add_scalar("loss/iter", loss, iter)
         loss.backward()
         optimizer.step()
         torch.cuda.synchronize()
         measurements.append(time.time() - start)
 
+    writer.flush()
+    writer.close()
     # Throw away measurements for warmup iterations
     return measurements[warmup_iterations:]
 
@@ -149,12 +158,12 @@ def sweep(benchmark):
     # Single machine baselines
     append_benchmark("  no ddp", range(1), {"use_ddp_for_single_rank": False})
     append_benchmark("   1M/1G", range(1))
-    append_benchmark("   1M/2G", range(2))
-    append_benchmark("   1M/4G", range(4))
+    #append_benchmark("   1M/2G", range(2))
+    #append_benchmark("   1M/4G", range(4))
 
     # Multi-machine benchmarks
-    for i in range(1, (dist.get_world_size() // 8) + 1):
-        append_benchmark("   %dM/8G" % i, range(i * 8))
+    #for i in range(1, (dist.get_world_size() // 8) + 1):
+    #    append_benchmark("   %dM/8G" % i, range(i * 8))
 
     # Run benchmarks in order of increasing number of GPUs
     print_header()
