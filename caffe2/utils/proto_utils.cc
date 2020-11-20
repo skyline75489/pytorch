@@ -136,7 +136,7 @@ C10_EXPORT bool ParseProtoFromLargeString(
   ::google::protobuf::io::ArrayInputStream input_stream(str.data(), str.size());
   ::google::protobuf::io::CodedInputStream coded_stream(&input_stream);
   // Set PlanDef message size limit to 2G.
-  coded_stream.SetTotalBytesLimit(2147483647, 512LL << 20);
+  coded_stream.SetTotalBytesLimit(2147483647);
   return proto->ParseFromCodedStream(&coded_stream);
 }
 
@@ -146,10 +146,9 @@ C10_EXPORT bool ReadProtoFromBinaryFile(
   ::google::protobuf::io::CopyingInputStreamAdaptor stream(
       new IfstreamInputStream(filename));
   stream.SetOwnsCopyingStream(true);
-  // Total bytes hard limit / warning limit are set to 2GB and 512MB
-  // respectively.
+  // Total bytes hard limit are set to 2GB.
   ::google::protobuf::io::CodedInputStream coded_stream(&stream);
-  coded_stream.SetTotalBytesLimit(2147483647, 512LL << 20);
+  coded_stream.SetTotalBytesLimit(2147483647);
   return proto->ParseFromCodedStream(&coded_stream);
 }
 
@@ -200,7 +199,7 @@ C10_EXPORT bool ParseProtoFromLargeString(const string& str, Message* proto) {
   ::google::protobuf::io::ArrayInputStream input_stream(str.data(), str.size());
   ::google::protobuf::io::CodedInputStream coded_stream(&input_stream);
   // Set PlanDef message size limit to 2G.
-  coded_stream.SetTotalBytesLimit(2147483647, 512LL << 20);
+  coded_stream.SetTotalBytesLimit(2147483647);
   return proto->ParseFromCodedStream(&coded_stream);
 }
 
@@ -244,7 +243,7 @@ C10_EXPORT bool ReadProtoFromBinaryFile(
   std::unique_ptr<CodedInputStream> coded_input(
       new CodedInputStream(raw_input.get()));
   // A hack to manually allow using very large protocol buffers.
-  coded_input->SetTotalBytesLimit(2147483647, 536870912);
+  coded_input->SetTotalBytesLimit(2147483647);
   bool success = proto->ParseFromCodedStream(coded_input.get());
   coded_input.reset();
   raw_input.reset();
