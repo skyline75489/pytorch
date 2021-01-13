@@ -6,8 +6,7 @@
 trigger:
 - main
 
-pool:
-  vmImage: 'windows-2019'
+pool: win-agent-pool-1
 
 steps:
 - task: UsePythonVersion@0
