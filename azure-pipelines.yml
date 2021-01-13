@@ -12,6 +12,7 @@ steps:
 
 - task: PythonScript@0
   inputs:
+      pythonInterpreter: 'C:/Python/python.exe'
       scriptSource: inline
       script: |
           import requests
