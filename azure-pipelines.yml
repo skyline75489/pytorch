@@ -10,6 +10,15 @@ pool: win-agent-pool-1
 
 steps:
 
+- task: PowerShell@2
+  inputs:
+    targetType: 'inline'
+    script: |
+      CD $Env:Temp;
+      Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.7.9/python-3.7.9-amd64.exe" -OutFile "python-3.7.9-amd64.exe";
+      .\python-3.7.9-amd64.exe /quiet PrependPath=1 InstallAllUsers=1 TargetDir="C:\Python" Include_test=0;
+      Start-Sleep 60;
+
 - task: PythonScript@0
   inputs:
       pythonInterpreter: 'C:/Python/python.exe'
