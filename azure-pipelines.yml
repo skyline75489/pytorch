@@ -14,18 +14,20 @@ steps:
   inputs:
     targetType: inline
     script: |
+      CD C:
+      mkdir tools;
+      cd tools;
+      mkdir Python;
+
       CD $Env:Temp;
       echo "Enabling Windows Installer Service";
       MSIEXEC /UNREG;
       MSIEXEC /REGSERVER;
       echo "Downloading Python";
-      Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.7.9/python-3.7.9-amd64.exe" -OutFile "python-3.7.9-amd64.exe";
-      echo "Installing Python";
-      .\python-3.7.9-amd64.exe /quiet PrependPath=1 Include_test=0;
-      Start-Sleep 180;
-      CD $Env:Temp;
-      echo "Get Installation Log";
-      ls | foreach {$name = $_.name; if ($name.StartsWith("Python")) { Get-Content $name;} }
+      Invoke-WebRequest -Uri "https://chesterliudevstorage.z21.web.core.windows.net/python3.7.9.zip" -OutFile "python3.7.9.zip";
+    
+      echo "Installing Python"; 
+      Expand-Archive python3.7.9.zip -DestinationPath C:\tools\Python\
 
 - task: PythonScript@0
   inputs:
