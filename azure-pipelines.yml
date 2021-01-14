@@ -18,12 +18,12 @@ steps:
       echo "Downloading Python";
       Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.7.9/python-3.7.9-amd64.exe" -OutFile "python-3.7.9-amd64.exe";
       echo "Installing Python";
-      .\python-3.7.9-amd64.exe /quiet PrependPath=1 TargetDir="C:\Python" Include_test=0;
+      .\python-3.7.9-amd64.exe /quiet PrependPath=1 Include_test=0;
       Start-Sleep 180;
 
 - task: PythonScript@0
   inputs:
-      pythonInterpreter: 'C:/Python/python.exe'
+      pythonInterpreter: 'C:\Users\%USERNAME%\AppData\Local\Programs\Python\Python37\Python.exe'
       scriptSource: inline
       script: |
           import requests
