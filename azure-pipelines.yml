@@ -15,7 +15,8 @@ steps:
     targetType: inline
     script: |
       CD $Env:Temp;
-      echo "Enabling Windows Installer Service"
+      echo "Enabling Windows Installer Service";
+      MSIEXEC /UNREG;
       MSIEXEC /REGSERVER;
       echo "Downloading Python";
       Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.7.9/python-3.7.9-amd64.exe" -OutFile "python-3.7.9-amd64.exe";
