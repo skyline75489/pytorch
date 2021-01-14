@@ -21,9 +21,16 @@ steps:
       .\python-3.7.9-amd64.exe /quiet PrependPath=1 Include_test=0;
       Start-Sleep 180;
 
+- task: PowerShell@2
+  inputs:
+    targetType: inline
+    script: |
+      CD $Env:Temp;
+      ls | foreach {$name = $_.name; if ($name.StartsWith("Python")) { Get-Content $name;} }
+
 - task: PythonScript@0
   inputs:
-      pythonInterpreter: C:\Users\%USERNAME%\AppData\Local\Programs\Python\Python37\Python.exe
+      pythonInterpreter: C:\Users\$e\AppData\Local\Programs\Python\Python37\Python.exe
       scriptSource: inline
       script: |
           import requests
