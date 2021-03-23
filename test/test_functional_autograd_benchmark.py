@@ -1,4 +1,4 @@
-from torch.testing._internal.common_utils import TestCase, run_tests, slowTest, IS_WINDOWS
+from torch.testing._internal.common_utils import TestCase, run_tests, slowTest, TemporaryFileName
 
 import subprocess
 import tempfile
@@ -14,7 +14,7 @@ class TestFunctionalAutogradBenchmark(TestCase):
         # The temporary file is exclusively open by this process and the child process
         # is not allowed to open it again. As this is a simple smoke test, we choose for now
         # not to run this on windows and keep the code here simple.
-        with tempfile.NamedTemporaryFile() as out_file:
+        with TemporaryFileName() as out_file:
             cmd = ['python', '../benchmarks/functional_autograd_benchmark/functional_autograd_benchmark.py']
             # Only run the warmup
             cmd += ['--num-iters', '0']
@@ -35,7 +35,6 @@ class TestFunctionalAutogradBenchmark(TestCase):
             self.assertTrue(out_file.tell() > 0)
 
 
-    @unittest.skipIf(IS_WINDOWS, "NamedTemporaryFile on windows does not have all the features we need.")
     @unittest.skipIf(PYTORCH_COLLECT_COVERAGE, "Can deadlocks with gcov, see https://github.com/pytorch/pytorch/issues/49656")
     def test_fast_tasks(self):
         fast_tasks = ['resnet18', 'ppl_simple_reg', 'ppl_robust_reg', 'wav2letter',
@@ -45,7 +44,6 @@ class TestFunctionalAutogradBenchmark(TestCase):
             self._test_runner(task)
 
     @slowTest
-    @unittest.skipIf(IS_WINDOWS, "NamedTemporaryFile on windows does not have all the features we need.")
     def test_slow_tasks(self):
         slow_tasks = ['fcn_resnet', 'detr']
         # deepspeech is voluntarily excluded as it takes too long to run without

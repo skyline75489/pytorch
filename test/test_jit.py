@@ -15288,7 +15288,7 @@ dedent """
         self.checkScript(fn, ("h",))
         self.checkScript(fn, ("hello",))
 
-    @unittest.skipIf(IS_WINDOWS or IS_SANDCASTLE, "NYI: TemporaryFileName support for Windows or Sandcastle")
+    @unittest.skipIf(IS_SANDCASTLE, "NYI: TemporaryFileName support for Windows or Sandcastle")
     def test_attribute_unpickling(self):
         tensor = torch.randn(2, 2)
         tester = self
@@ -15320,7 +15320,7 @@ dedent """
                     continue
                 self.assertEqual(value, getattr(loaded, "_" + name))
 
-    @unittest.skipIf(IS_WINDOWS or IS_SANDCASTLE, "NYI: TemporaryFileName support for Windows or Sandcastle")
+    @unittest.skipIf(IS_SANDCASTLE, "NYI: TemporaryFileName support for Windows or Sandcastle")
     def test_old_models_bc(self):
         model = {
             'archive/version': b'1',
@@ -15428,7 +15428,6 @@ dedent """
     def test_script_scope(self):
         scripted = torch.jit.script(torch.nn.functional.pad)
 
-    @unittest.skipIf(IS_WINDOWS, "NYI: TemporaryFileName on Windows")
     def test_serialization_sharing(self):
         class M(torch.jit.ScriptModule):
             def __init__(self):

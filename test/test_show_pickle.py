@@ -4,11 +4,10 @@ import tempfile
 import torch
 import torch.utils.show_pickle
 
-from torch.testing._internal.common_utils import TestCase, run_tests, IS_WINDOWS
+from torch.testing._internal.common_utils import TestCase, run_tests, TemporaryFileName
 
 class TestShowPickle(TestCase):
 
-    @unittest.skipIf(IS_WINDOWS, "Can't re-open temp file on Windows")
     def test_scripted_model(self):
         class MyCoolModule(torch.nn.Module):
             def __init__(self, weight):
@@ -20,7 +19,7 @@ class TestShowPickle(TestCase):
 
         m = torch.jit.script(MyCoolModule(torch.tensor([2.0])))
 
-        with tempfile.NamedTemporaryFile() as tmp:
+        with TemporaryFileName() as tmp:
             torch.jit.save(m, tmp)
             tmp.flush()
             buf = io.StringIO()

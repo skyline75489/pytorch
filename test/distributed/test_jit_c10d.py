@@ -44,7 +44,7 @@ def _create_tcp_store():
     TEST_WITH_TSAN,
     "TSAN is not fork-safe since we're forking in a multi-threaded environment",
 )
-@unittest.skipIf(IS_WINDOWS, "TCPStore not available on Windows")
+@unittest.skipIf(IS_WINDOWS, "NCCL not available on Windows")
 class ProcessGroupNCCLJitTest(JitTestCase):
     MAIN_PROCESS_RANK = 0
 
@@ -169,7 +169,7 @@ class StoreTest(JitTestCase):
         create_prefix_file_store(self.filestore, self.prefix)
 
 
-@unittest.skipIf(IS_WINDOWS, "TCPStore not available on Windows")
+@unittest.skipIf(IS_WINDOWS, "NCCL not available on Windows")
 class C10dFrontendJitTest(JitTestCase):
     def setUp(self):
         self.rank = 0
@@ -194,7 +194,7 @@ class C10dFrontendJitTest(JitTestCase):
         ProcessGroupNCCL2 = frontend2.get_process_group_by_name(pg_name)
         self.assertEqual(frontend2.get_name_of_process_group(ProcessGroupNCCL2), pg_name)
 
-@unittest.skipIf(IS_WINDOWS, "TCPStore not available on Windows")
+@unittest.skipIf(IS_WINDOWS, "NCCL not available on Windows")
 class C10dProcessGroupSerialization(JitTestCase):
     def setUp(self):
         self.num_gpus = torch.cuda.device_count()
